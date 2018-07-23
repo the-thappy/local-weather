@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Weather | tHappy</title>
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+		<meta name="theme-color" content="#8eb9ff" id="theme-color">
+		<link rel="stylesheet" href="css/bootstrap.min.css">
+		<script src="js/jquery.min.js"></script>
+		<script src="js/chart.js"></script>
+		<script src="js/chroma.min.js"></script>
+		<style>
+			body {
+				font-family: Segoe UI ,Roboto, Ubuntu, sans-serif;
+				min-height: 100vh;
+			}
+			.form-control::-webkit-input-placeholder {
+			color: #212529;
+			}
+			.form-control:focus {
+				box-shadow: none;
+			}
+		</style>
+	</head>
+	<body>
+		<br>
+		<div class="container">
+			<div class="row">
+				<div class="col-md-4 offset-md-4 col-sm-10 offset-sm-2">
+					<h1 class="display-4 text-center">Weather</h1>
+					<h1 class="display-1 text-center">
+					<span id="temperature">42</span>°<span id="units" style="font-size: 36px; vertical-align: text-top;font-weight: lighter;" onclick="ctof()">C</span>
+					</h1>
+					<h1 class="display-6 text-center" id="location">Wonderland</h1>
+					<button class="btn btn-block btn-block btn-light" id="weather" onclick="getLocation()">Weather</button>
+					<br>
+					<div class="input-group mb-2 mr-sm-2">
+						<input type="text" class="form-control btn" placeholder="Enter city name..." name="city" id="city">
+						<div class="input-group-append">
+							<button class="btn btn-block btn-light" onclick="getLocationByCity()">Get Weather by City</button>
+						</div>
+					</div>
+					<br>
+					<div class="alert text-center" style="display: none;">Enter a valid city name!</div>
+				</div>
+			</div>
+		</div>
+		<!--
+					<div class="form-group btn-group btn-group-justified btn-group-toggle" data-toggle="buttons">
+								<label class="btn btn-secondary active">
+											<input type="radio" name="options" id="c" onclick="c()" checked> Celsius
+								</label>
+								<label class="btn btn-secondary">
+											<input type="radio" name="options" id="f" onclick="f()"> Fahrenheit
+								</label>
+					</div>
+					<input type="text" class="form-control" placeholder="Enter city name..." name="city" id="city">
+					<button class="btn btn-block btn-secondary" onclick="getLocationByCity()">Get Weather by City</button>
+		-->
+	</body>
+	<script>
+	var base_url = "https://api.openweathermap.org/data/2.5/weather?appid=95f65269f9c4512c004d7c337f574fd7&units=metric";
+	$('#city').on("keypress", function(e) {if (e.keyCode == 13) {getLocationByCity();}});
+	var chroma_scale_colors = ['68c2ff', 'ff5c7e'];
+	//var chroma_scale_colors = ['68c2ff', 'ff3048'];
+		function getLocation() {
+			navigator.geolocation.getCurrentPosition(function(position) {
+				//console.log(position);
+					var lat = position.coords.latitude;
+					var lon = position.coords.longitude;
+					localStorage.setItem("lat", lat);
+					localStorage.setItem("lon", lon);
+				$.ajax({
+					url: base_url + "&lat=" + lat + "&lon=" + lon
+				}).done(function(data) {
+					//console.log(data);
+					changeBG(data)
+					var temp = data["main"]["temp"];
+					localStorage.setItem("temp", temp);
+					var location = data["name"];
+					localStorage.setItem("location", location);
+					var country = data["sys"]["country"];
+					localStorage.setItem("country", country);
+					$("#location").text(location + ", " + country);
+					$("#temperature").text(temp);
+					$("title").text(location);
+					$("#units").text("C");
+				});
+			});
+		}
+		function f() {
+			$("#f").parent().addClass('active');
+			$("#c").parent().removeClass('active');
+			var temp = localStorage.getItem("temp");
+			temp *= (9/5);
+			temp += 32;
+			$("#temperature").text(temp.toFixed(0));
+			$("#units").text("F");
+		}
+		function c() {
+			$("#c").parent().addClass('active');
+			$("#f").parent().removeClass('active');
+			var temp = localStorage.getItem("temp");
+			$("#temperature").text(Number(temp).toFixed(0));
+			$("#units").text("C");
+		}
+		function ctof() {
+			if ($("#units").text() == "C") {
+				var temp = localStorage.getItem("temp");
+				temp *= (9/5);
+				temp += 32;
+				$("#temperature").text(temp.toFixed(0));
+				$("#units").text("F");
+			}
+			else if ($("#units").text() == "F") {
+				var temp = localStorage.getItem("temp");
+				$("#temperature").text(Number(temp).toFixed(0));
+				$("#units").text("C");
+			}
+		}
+		function getLocationByCity() {
+			if ($("#city").val() != "") {
+			$("#city").removeClass("is-invalid");
+			var city = $("#city").val();
+			console.log(city);
+			$.ajax({
+					url: base_url + "&q=" + city
+				}).done(function(data) {
+					changeBG(data);
+					var temp = data["main"]["temp"];
+					localStorage.setItem("temp", temp);
+					var location = data["name"];
+					localStorage.setItem("location", location);
+					var country = data["sys"]["country"];
+					localStorage.setItem("country", country);
+					$("#location").text(location + ", " + country);
+					$("#temperature").text(temp.toFixed(0));
+					$("title").text(location.toUpperCase());
+					$("#units").text("C");
+				}).fail(function() {
+					$("#city").addClass("is-invalid");
+					$(".alert").fadeIn();
+					var f = chroma.scale(chroma_scale_colors);
+					var temp = localStorage.getItem("temp");
+					temp = Math.abs(temp / 50);
+					var btn_dark = f(temp).darken(1).hex();
+					var btn_darker = f(temp).darken(2).hex();
+					$(".alert").css("background-color", btn_dark);
+					$(".alert").css("border-color", btn_darker);
+					$("#city").focus();
+					$(".alert").delay(3000).fadeOut();
+				});
+		}
+		else {
+			$("#city").addClass("is-invalid");
+			$(".alert").fadeIn();
+			var f = chroma.scale(chroma_scale_colors);
+			var temp = localStorage.getItem("temp");
+			temp = Math.abs(temp / 50);
+			var btn_dark = f(temp).darken(1).hex();
+			var btn_darker = f(temp).darken(2).hex();
+			$(".alert").css("background-color", btn_dark);
+			$(".alert").css("border-color", btn_darker);
+			$("#city").focus();
+			$(".alert").delay(3000).fadeOut();
+		}
+	}
+	function changeBG(data) {
+		console.log("changeBG Called");
+		var temp = data["main"]["temp"];
+		var f = chroma.scale(chroma_scale_colors);
+		temp = Math.abs(temp / 50);
+		console.log(temp);
+		var theme_color = f(temp).hex();
+		var theme_color_other = f(temp).darken(1).hex();
+		console.log(theme_color_other);
+		$("body").css({background: "-webkit-linear-gradient(" + theme_color + ", " + theme_color_other + ")"});
+		$("#theme-color").attr("content", theme_color)
+		var btn_dark = f(temp).darken(1).hex();
+		var btn_darker = f(temp).darken(2).hex();
+		var btn_light = f(temp).brighten(2).hex();
+		$(".btn").css("background-color", btn_dark);
+		$(".btn").css("border-color", btn_darker);
+		$(".btn:focus").css("outline", btn_darker);
+		$("input").css("color", "#212529");
+	}
+	function changeBGCached(temp) {
+		console.log("changeBGCached Called");
+		var temp = temp;
+		var f = chroma.scale(chroma_scale_colors);
+		temp = Math.abs(temp / 50);
+		console.log(temp);
+		var theme_color = f(temp).hex();
+		var theme_color_other = f(temp).darken(1).hex();
+		console.log(theme_color_other);
+		$("body").css({background: "-webkit-linear-gradient(" + theme_color + ", " + theme_color_other + ")"});
+		$("#theme-color").attr("content", theme_color)
+		var btn_dark = f(temp).darken(1).hex();
+		var btn_darker = f(temp).darken(2).hex();
+		$(".btn").css("background-color", btn_dark);
+		$(".btn").css("border-color", btn_darker);
+		$("input").css("color", "#212529");		
+	}
+		$("document").ready(function() {
+			var location = localStorage.getItem("location");
+			var country = localStorage.getItem("country");
+			var temp = localStorage.getItem("temp");
+			changeBGCached(temp);
+			if (location != null)
+				$("#location").text(location + ", " + country);
+			if (temp != null)
+			$("#temperature").text(Number(temp).toFixed(0));
+		});
+	</script>
+</html>
