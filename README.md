@@ -1,6 +1,13 @@
 # Local Weather
 freeCodeCamp Local Weather Project. Used JavaScript, Bootstrap and Chroma.js
+
 [Live Demo](https://storage.googleapis.com/thappy/weather.html)
+
+* Remembers last searched location
+* Units in Celsius & Fahrenheit
+* Search weather for a particular location
+* Use GPS to get weather for current location
+
 ![Screenshot 1](https://github.com/the-thappy/local-weather/blob/master/screens/screen1.jpg)
 ![Screenshot 2](https://github.com/the-thappy/local-weather/blob/master/screens/screen2.jpg)
 ![Screenshot 3](https://github.com/the-thappy/local-weather/blob/master/screens/screen3.jpg)
