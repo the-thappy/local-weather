@@ -1,7 +1,7 @@
 # Local Weather
 freeCodeCamp Local Weather Project. Used JavaScript, Bootstrap and Chroma.js
 
-[Live Demo](https://storage.googleapis.com/thappy/weather.html)
+[Live Demo](https://storage.googleapis.com/thappy/Projects/Weather/index.html)
 
 * Remembers last searched location
 * Units in Celsius & Fahrenheit
